@@ -11,11 +11,9 @@ export default function Recipe() {
   const handleSearch = (e) => {
     setLoading(true)
     setTimeout(() => {
-      
       setSearch(e.target.value);
       setLoading(false)
     }, 1000);
-    
   };
 
   useEffect(()=>{
