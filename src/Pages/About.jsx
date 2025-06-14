@@ -73,7 +73,7 @@ export default function About() {
             Have questions or suggestions? We'd love to hear from you!
           </Typography>
           <Typography variant="body1" sx={{ mt: 2 }}>
-            Email us at: contact@recipehub.com
+            Email us at: hvmagadum04@gmail.com
           </Typography>
         </Box>
       </Container>

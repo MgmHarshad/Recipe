@@ -52,13 +52,10 @@ const Footer = () => {
             Contact Us
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Email: support@recipebook.com
+            Email: hvmagadum04@gmail.com.com
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Phone: +1 234 567 890
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Address: 123 Recipe St, Culinary City, Foodland
+            Phone: +91 9481131520
           </Typography>
         </Grid>
       </Grid>
