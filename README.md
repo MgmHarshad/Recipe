@@ -1,70 +1,140 @@
-# Getting Started with Create React App
+# Recipe Book
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A single-page **React** application for browsing recipes from a public API. It was built during a **3-day React.js workshop** (starter project provided by the organizers), then extended with routing, data fetching, search, and a polished UI using **Material UI (MUI)**.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## What this app does
 
-### `npm start`
+| Feature | Description |
+|--------|-------------|
+| **Home** | Hero section with background image, live search, and a grid of recipe cards loaded from the API. |
+| **Recipes** | Dedicated page that loads recipes with **Axios**, shows a loading spinner while fetching, and filters the list as you type (with a short delay for UX). |
+| **Recipe detail** | Clicking a card opens a **modal** with full details: image, tags, ingredients, and expandable **instructions** list. |
+| **About** | Marketing-style page with mission text and feature highlights. |
+| **404** | Unknown routes show a friendly “page not found” view. |
+| **Layout** | Shared **navigation bar** and **footer** on all pages. |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Data source:** [DummyJSON Recipes API](https://dummyjson.com/docs/recipes) (`https://dummyjson.com/recipes`) — sample recipes with images, ratings, ingredients, and instructions.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## How it works (architecture)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Entry:** `src/index.js` mounts `<App />` with React 18’s `createRoot` and `StrictMode`.
+2. **Routing:** `src/App.js` wraps the UI in `BrowserRouter` from **React Router v6**. Routes:
+   - `/` → `Home.jsx`
+   - `/about` → `About.jsx`
+   - `/recipe` → `Recipe.jsx`
+   - `/*` (catch-all) → `Error.jsx`
+3. **State & data:**
+   - **Home** uses `useState` + `useEffect` and the browser **`fetch`** API to load recipes once on mount, then passes `recipes` and `search` into `RecipeContainer`.
+   - **Recipe** uses **`axios.get`** for the same endpoint, tracks `loading`, and debounces search input slightly before updating filter state.
+4. **Presentation:** `RecipeContainer` filters by recipe **name** or **cuisine** (case-insensitive) and maps each item to `RecipeCard`. `RecipeCard` uses local state to control a MUI **`Modal`** and passes the selected recipe into `SingleRecipe`.
 
-### `npm run build`
+```mermaid
+flowchart LR
+  subgraph pages [Pages]
+    Home
+    Recipe
+    About
+    Error
+  end
+  subgraph api [API]
+    DummyJSON["dummyjson.com/recipes"]
+  end
+  Home -->|fetch| DummyJSON
+  Recipe -->|axios| DummyJSON
+  Home --> RecipeContainer
+  Recipe --> RecipeContainer
+  RecipeContainer --> RecipeCard
+  RecipeCard --> SingleRecipe
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Tech stack
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| Technology | Role in this project |
+|------------|----------------------|
+| **React 18** | UI with function components, hooks (`useState`, `useEffect`). |
+| **Create React App** (`react-scripts`) | Dev server, build, and test runner without manual Webpack config. |
+| **React Router DOM v6** | Client-side routes (`Routes`, `Route`, `Link`, `BrowserRouter`). |
+| **MUI v5** (`@mui/material`, `@mui/icons-material`) | Pre-built accessible components, icons, layout, and theming helpers. |
+| **Emotion** (`@emotion/react`, `@emotion/styled`) | Default **CSS-in-JS** engine used by MUI v5 under the hood. |
+| **Axios** | HTTP client on the Recipe page (alternative to `fetch`). |
+| **Styled Components** | Present in `package.json`; MUI in this repo primarily uses the **Emotion** path (`sx`, `styled` from `@mui/material/styles`). |
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Material UI (MUI) — explained
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**MUI** (formerly “Material-UI”) is a library of **ready-made React components** (buttons, cards, dialogs, grids, typography, etc.) styled with a design system inspired by Google’s **Material Design**. You import components and compose them like normal React elements instead of writing all CSS from scratch.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Why you see `@emotion/*` in `package.json`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+MUI v5’s default styling is **CSS-in-JS** powered by **Emotion**. When you use `<Box sx={{ ... }}>` or `styled()` from MUI, styles are generated at runtime and scoped to your components. You do **not** have to write separate `.css` files for every MUI prop (though you still can for global styles like `index.css`).
 
-## Learn More
+### The `sx` prop (used everywhere in this repo)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+`sx` is a shorthand for **one-off styles** that also understands the **theme** (spacing units, palette colors, breakpoints).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Examples from this project:
 
-### Code Splitting
+- **Layout & responsive design:** `flexDirection: { xs: "column", sm: "row" }` in `SingleRecipe.jsx` means “column on extra-small screens, row from `sm` and up.”
+- **Theme tokens:** `color: 'primary.main'`, `bgcolor: 'background.paper'` tie colors to the MUI theme instead of hard-coding hex everywhere.
+- **Spacing:** `p: 2`, `mb: 4` use the theme’s spacing scale (by default `1` = 8px).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+*“We use MUI’s `sx` prop for responsive, theme-aware styling without maintaining a large set of custom CSS modules.”*
 
-### Analyzing the Bundle Size
+### `styled` from `@mui/material/styles`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+In `SingleRecipe.jsx`, `styled` wraps native elements or MUI components to create **reusable styled components** that can read `theme` (typography, spacing, transitions). The `ExpandMore` button is a styled `IconButton` whose rotation depends on the `expand` prop.
 
-### Making a Progressive Web App
+*“For repeated or animated patterns we used MUI’s `styled` API so the component stays readable and still accesses the theme.”*
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-### Advanced Configuration
+## Project structure (high level)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```
+src/
+  App.js                 # Router + layout shell
+  index.js               # React root
+  Pages/
+    Home.jsx             # Hero + search + list
+    Recipe.jsx           # Axios + search + list
+    About.jsx
+    Error.jsx
+  components/
+    NavBar.jsx
+    Footer.jsx
+    RecipeContainer.jsx  # Filter + grid
+    RecipeCard.jsx       # Card + modal trigger
+    SingleRecipe.jsx     # Detail inside modal
+  Assets/Images/
+```
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Getting started
 
-### `npm run build` fails to minify
+**Requirements:** Node.js and npm (versions compatible with Create React App).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+npm install
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000). The dev server hot-reloads on save.
+
+| Script | Purpose |
+|--------|---------|
+| `npm start` | Development server |
+| `npm run build` | Production build in `build/` |
+| `npm test` | Jest + React Testing Library |
+
+---
+
+## Acknowledgement
+
+Starter structure and workshop brief were provided by the **React.js workshop** organizers; implementation, UI composition, and README documentation reflect learning and iteration during and after the program.
